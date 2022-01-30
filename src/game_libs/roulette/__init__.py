@@ -4,7 +4,7 @@ ROULETTE GAME SLOTS found on https://github.com/ntaliceo/roulette-simulator,
 rest is done here
 """
 
-import random, discord, time
+import random, discord, time, asyncio
 
 
 # what will be called to play the game
@@ -13,16 +13,17 @@ class roulette_discord_implementation:
 		self.bot = bot
 		self.channel = channel
 		self.currency_symbol = currency_emoji
+		self.first, self.second, self.third = ['1', '4', '7', '10', '13', '16', '19', '22', '25', '28', '31', '34'], ['2', '5', '8', '11', '14', '17', '20', '23', '26', '29', '32', '35'], ['3', '6', '9', '12', '15', '18', '21', '24', '27', '30', '33', '36']
 		self.slots = {'00': 'green', '0': 'green', '1': 'red', '2': 'black',
              '3': 'red', '4': 'black', '5': 'red', '6': 'black', '7': 'red',
-             '8': 'black', '9': 'red', '10': 'black', '11': 'red',
-             '12': 'black', '13': 'red', '14': 'black', '15': 'red',
-             '16': 'black', '17': 'red', '18': 'black', '19': 'red',
+             '8': 'black', '9': 'red', '10': 'black', '11': 'black',
+             '12': 'red', '13': 'black', '14': 'red', '15': 'black',
+             '16': 'red', '17': 'black', '18': 'red', '19': 'red',
              '20': 'black', '21': 'red', '22': 'black', '23': 'red',
              '24': 'black', '25': 'red', '26': 'black', '27': 'red',
-             '28': 'black', '29': 'red', '30': 'black', '31': 'red',
-             '32': 'black', '33': 'red', '34': 'black', '35': 'red',
-             '36': 'black'}
+             '28': 'black', '29': 'black', '30': 'red', '31': 'black',
+             '32': 'red', '33': 'black', '34': 'red', '35': 'black',
+             '36': 'red'}
 	"""
 	
 	not used but may be, if adding that multiple player can play the same roulette game at once
@@ -58,13 +59,15 @@ class roulette_discord_implementation:
 		await channel.send(embed=embed)
 
 		# wait the 10 seconds
-		time.sleep(10)
+		await asyncio.sleep(10)
 
 		win = lose = multiplicator = None
 
 		if space in ["odd", "even", "black", "red"]:
 			multiplicator = 2
-		else:
+		elif str(space).lower() in ["1st", "2nd", "3rd", "first", "second", "third", "1-12", "13-24", "25-36"]:
+			multiplicator = 3
+		elif spaceType == "int":
 			multiplicator = 35
 
 		result = random.choice(list(self.slots.keys()))
@@ -72,24 +75,43 @@ class roulette_discord_implementation:
 
 		result_prompt = f"The ball landed on: **{self.slots[result]} {result}**!\n\n"
 
-		if space == "black":
+		if str(space).lower() == "black":
 			win = 1 if self.slots[result] == "black" else 0
 
-		elif space == "red":
+		elif str(space).lower() == "red":
 			win = 1 if self.slots[result] == "red" else 0
 
-		elif space == "even":
-			win = 1 if (result % 2) == 0 else 0
+		elif str(space).lower() == "even":
+			win = 1 if (int(result) % 2) == 0 else 0
 
-		elif space == "odd":
-			win = 1 if (result % 2) != 0 else 0
+		elif str(space).lower() == "odd":
+			win = 1 if (int(result) % 2) != 0 else 0
+
+		elif str(space).lower() == "1st":
+			win = 1 if str(result) in self.first else 0
+		elif str(space).lower() == "first":
+			win = 1 if str(result) in self.first else 0
+		elif str(space).lower() == "2nd":
+			win = 1 if str(result) in self.second else 0
+		elif str(space).lower() == "second":
+			win = 1 if str(result) in self.second else 0
+		elif str(space).lower() == "3rd":
+			win = 1 if str(result) in self.third else 0
+		elif str(space).lower() == "third":
+			win = 1 if str(result) in self.third else 0
+		elif str(space).lower() == "1-12":
+			win = 1 if int(result) in range (1, 13) else 0
+		elif str(space).lower() == "13-24":
+			win = 1 if int(result) in range (13, 25) else 0
+		elif str(space).lower() == "25-36":
+			win = 1 if int(result) in range (25, 37) else 0
 
 		elif spaceType == "int":
-			win = 1 if int(space) == result else 0
+			win = 1 if int(space) == int(result) else 0
 
 		else:
 			# shouldnt happen
-			print("error")
+			print(space)
 
 		if win:
 			result_prompt += f"**Winner:**\n{mention} won {str(self.currency_symbol)} {bet*multiplicator}"
