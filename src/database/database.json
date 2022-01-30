@@ -1,23 +1,11 @@
 {
-    "userdata": [
-        {
-            "user_id": 000000000000000000,
-            "cash": 100.0,
-            "bank": 100.0,
-            "items": "none",
-            "last_slut": "2021-01-01 00:00:00",
-            "last_work": "2021-01-01 00:00:00",
-            "last_crime": "2021-01-01 00:00:00",
-            "last_rob": "2021-01-01 00:00:00"
-        }
-    ],
     "variables": [
         {
             "name": "slut",
-            "delay": 10,
-            "min_revenue": 50,
-            "max_revenue": 400,
-            "proba": 50,
+            "delay": 3,
+            "min_revenue": 1500,
+            "max_revenue": 4300,
+            "proba": 70,
             "win_phrases": [
                 "You made",
                 "Your dad likes it so much he gives you"
@@ -26,15 +14,15 @@
                 "You were fined",
                 "Your uncle didn't like the encounter. You pay"
             ],
-            "min_lose_amount_percentage": 2,
-            "max_lose_amount_percentage": 5
+            "min_lose_amount_percentage": 1,
+            "max_lose_amount_percentage": 2
         },
         {
             "name": "crime",
-            "delay": 60,
-            "min_revenue": 100,
-            "max_revenue": 1200,
-            "proba": 30,
+            "delay": 4,
+            "min_revenue": 3000,
+            "max_revenue": 6000,
+            "proba": 60,
             "win_phrases": [
                 "You commited a crime and got",
                 "You robbed a bank and got"
@@ -43,25 +31,35 @@
                 "You were fined",
                 "MacGyver finds you, you pay"
             ],
-            "min_lose_amount_percentage": 10,
-            "max_lose_amount_percentage": 20
+            "min_lose_amount_percentage": 1,
+            "max_lose_amount_percentage": 2
         },
         {
             "name": "work",
-            "delay": 10,
-            "min_revenue": 51,
-            "max_revenue": 200,
+            "delay": 2,
+            "min_revenue": 1000,
+            "max_revenue": 3000,
             "win_phrases": [
                 "You worked at SubWay and made",
                 "You helped someone do his homework and got"
             ]
         },
         {
+            "name": "daily",
+            "delay": 1440,
+            "min_revenue": 30000,
+            "max_revenue": 50000,
+            "win_phrases": [
+                "You got",
+                "Your mom gifted you"
+            ]
+        },
+        {
             "name": "rob",
             "delay": 45,
-            "proba": 50,
-            "min_gain_amount_percentage": 10,
-            "max_gain_amount_percentage": 20,
+            "proba": 40,
+            "min_gain_amount_percentage": 25,
+            "max_gain_amount_percentage": 50,
             "min_lose_amount_percentage": 10,
             "max_lose_amount_percentage": 20,
             "win_phrases": [
@@ -74,10 +72,28 @@
     ],
     "symbols": [
         {
-            "name": "currency_symbol",
-            "symbol_emoji": "my_currency_emoji_name"
+            "name": "$",
+            "symbol_emoji": "emoji id goes here"
         }
     ],
     "items": [],
-    "income_roles": []
+    "income_roles": [],
+    "userdata": [
+        {
+            "user_id": 100000000000000000,
+            "cash": 0.0,
+            "bank": 0.0,
+            "items": "none",
+            "last_slut": "2022-01-27 19:37:32.396443",
+            "last_work": "2022-01-27 19:37:29.953428",
+            "last_crime": "2022-01-27 19:37:34.968249",
+            "last_rob": "2022-01-22 12:31:41.926268",
+            "last_daily": "none",
+            "rate": 50,
+            "work_mult": 1.0,
+            "crime_mult": 1.0,
+            "slut_mult": 1.0,
+            "daily_mult": 1.0
+        }
+    ]
 }
