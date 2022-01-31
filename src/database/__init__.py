@@ -1039,7 +1039,7 @@ class pythonboat_database_handler:
             # overwrite, end
             json_content["userdata"][user_index] = json_user_content
             self.overwrite_json(json_content)
-            json_content["userdata"][user_index] = robbed_user_data
+            json_content["userdata"][robbed_user] = robbed_user_data
             self.overwrite_json(json_content)
 
 
