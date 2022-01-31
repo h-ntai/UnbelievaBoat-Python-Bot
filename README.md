@@ -36,3 +36,5 @@ You should be good to go!
 `upgrade` - You can upgrade the multiplicator of daily, work, crime and slut (costs 10k each x0.1 more)
 
 `stats` - this is not the unbelieva stats command! This shows the stats of a user like his chicken winning rate, his last work, etc. and his multiplicators
+
+*If the bot appears as online in the sidebar, try gghelpeconomy for a commands list*
