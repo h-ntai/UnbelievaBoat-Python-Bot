@@ -27,3 +27,12 @@ You can use and adjust the code as you want so it fits your needs.
 10. In the owners.json file, add your user id and the user id of other bot developers for having access to exclusive commands (such as add-money etc.).
 11. Launch main.py with **python3**.
 You should be good to go!
+
+### - Not implemented:
+`russian-roulette`
+### - Implemented but not available with original UnbelievaBoat
+`daily` - Simple daily command for getting an amount of money
+
+`upgrade` - You can upgrade the multiplicator of daily, work, crime and slut (costs 10k each x0.1 more)
+
+`stats` - this is not the unbelieva stats command! This shows the stats of a user like his chicken winning rate, his last work, etc. and his multiplicators
