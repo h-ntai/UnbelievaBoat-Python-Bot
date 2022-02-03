@@ -63,7 +63,7 @@ class roulette_discord_implementation:
 
 		win = lose = multiplicator = None
 
-		if space in ["odd", "even", "black", "red"]:
+		if space in ["odd", "even", "black", "red", "1-18", "19-36"]:
 			multiplicator = 2
 		elif str(space).lower() in ["1st", "2nd", "3rd", "first", "second", "third", "1-12", "13-24", "25-36"]:
 			multiplicator = 3
@@ -73,7 +73,7 @@ class roulette_discord_implementation:
 		result = random.choice(list(self.slots.keys()))
 		print(self.slots[result], result)
 
-		result_prompt = f"The ball landed on: **{self.slots[result]} {result}**!\n\n"
+		result_prompt = f"The ball landed on: **{self.slots[result]} {result}** !\n\n"
 
 		if str(space).lower() == "black":
 			win = 1 if self.slots[result] == "black" else 0
@@ -105,6 +105,10 @@ class roulette_discord_implementation:
 			win = 1 if int(result) in range (13, 25) else 0
 		elif str(space).lower() == "25-36":
 			win = 1 if int(result) in range (25, 37) else 0
+		elif str(space).lower() == "1-18":
+			win = 1 if int(result) in range (1, 19) else 0
+		elif str(space).lower() == "19-36":
+			win = 1 if int(result) in range (19, 37) else 0
 
 		elif spaceType == "int":
 			win = 1 if int(space) == int(result) else 0
