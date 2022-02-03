@@ -42,28 +42,28 @@ class pythonboat_database_handler:
             # all the users will get created automatically in the function self.find_index_in_db()
             # but for the different jobs etc the program needs configs for variables and symbols
             creating_file.write("""{\n\t"userdata": [], 
-										"variables":[
-											{"name":"slut","delay":15,"min_revenue":50,"max_revenue":400,"proba":50,"win_phrases":["You made","Your dad likes it so much he gives you"],"lose_phrases":["You were fined","Your uncle didn't like the encounter. You pay"],"min_lose_amount_percentage":2,"max_lose_amount_percentage":5},
-											{"name":"crime","delay":60,"min_revenue":100,"max_revenue":1200,"proba":30,"win_phrases":["You commited a crime and got","You robbed a bank and got"],"lose_phrases":["You were fined","MacGyver finds you, you pay"],"min_lose_amount_percentage":10,"max_lose_amount_percentage":20},
-											{"name":"work","delay":10,"min_revenue":50,"max_revenue":200,"win_phrases":["You worked at SubWay and made","You helped someone do his homework and got"]},
-											{"name":"rob","delay":45,"proba":50,"min_gain_amount_percentage":10,"max_gain_amount_percentage":20,"min_lose_amount_percentage":10,"max_lose_amount_percentage":20,"win_phrases":["You robbed and got"],"lose_phrases":["You were caught robbing and have to pay"]}], 
-										"symbols": [
-											{"name":"currency_symbol","symbol_emoji":":dollar:"}				
-										],
-										"items": [
-											{}				
-										],
-										"income_roles": [
-											{}				
-										]
-										\n}""")
+        										"variables":[
+        											{"name":"slut","delay":15,"min_revenue":50,"max_revenue":400,"proba":50,"win_phrases":["You made","Your dad likes it so much he gives you"],"lose_phrases":["You were fined","Your uncle didn't like the encounter. You pay"],"min_lose_amount_percentage":2,"max_lose_amount_percentage":5},
+        											{"name":"crime","delay":60,"min_revenue":100,"max_revenue":1200,"proba":30,"win_phrases":["You commited a crime and got","You robbed a bank and got"],"lose_phrases":["You were fined","MacGyver finds you, you pay"],"min_lose_amount_percentage":10,"max_lose_amount_percentage":20},
+        											{"name":"work","delay":10,"min_revenue":50,"max_revenue":200,"win_phrases":["You worked at SubWay and made","You helped someone do his homework and got"]},
+        											{"name":"rob","delay":45,"proba":50,"min_gain_amount_percentage":10,"max_gain_amount_percentage":20,"min_lose_amount_percentage":10,"max_lose_amount_percentage":20,"win_phrases":["You robbed and got"],"lose_phrases":["You were caught robbing and have to pay"]}], 
+        										"symbols": [
+        											{"name":"currency_symbol","symbol_emoji":":dollar:"}				
+        										],
+        										"items": [
+        											{}				
+        										],
+        										"income_roles": [
+        											{}				
+        										]
+        										\n}""")
             creating_file.close()
 
-    #
+        #
 
-    # check if json file is corrupted
-    #  -> in self.check_json()
-    # called from main.py
+        # check if json file is corrupted
+        #  -> in self.check_json()
+        # called from main.py
 
     def get_currency_symbol(self, test=False, value="unset"):
         if not test:
@@ -82,15 +82,16 @@ class pythonboat_database_handler:
             except:
                 return "error"
 
-    # if we handle a already created file, we need certain variables
+        # if we handle a already created file, we need certain variables
+
     async def check_json(self):
         temp_json_opening = open(self.pathToJson, "r")
         temp_json_content = json.load(temp_json_opening)
         """
-		possibly to add : 
-			improve the error system, raising specific errors with a "error_info"
-			for example : "userdata missing", or "slut missing", or even "slut min_revenue missing"
-		"""
+        possibly to add : 
+            improve the error system, raising specific errors with a "error_info"
+            for example : "userdata missing", or "slut missing", or even "slut min_revenue missing"
+        """
         try:
             check_content = temp_json_content
             # userdata space
@@ -115,8 +116,8 @@ class pythonboat_database_handler:
             return "error"
 
     """
-	GLOBAL FUNCTIONS
-	"""
+    GLOBAL FUNCTIONS
+    """
 
     # need to overwrite the whole json when updating, luckily the database won't be enormous
     def overwrite_json(self, content):
@@ -144,7 +145,7 @@ class pythonboat_database_handler:
         # we did NOT find him, which means he doesn't exist yet
         # so we automatically create him
         data_to_search.append({
-            "user_id": user_to_find,
+            "user_id": int(user_to_find),
             "cash": 0,
             "bank": 0,
             # "balance" : cash + bank
@@ -162,19 +163,19 @@ class pythonboat_database_handler:
             "daily_mult": 1.0
         })
         """
-			POSSIBLE ISSUE :
-				that we need to create user by overwrite, then problem of doing that while another command is
-				supposed to have it open etc. hopefully it works just as such
-		"""
+            POSSIBLE ISSUE :
+                that we need to create user by overwrite, then problem of doing that while another command is
+                supposed to have it open etc. hopefully it works just as such
+        """
         # now that the user is created, re-check and return int
 
         for i in range(len(data_to_search)):
             if data_to_search[i]["user_id"] == user_to_find:
-                return int(i), data_to_search
+                return i, data_to_search
 
     """
-	CLIENT-DB HANDLING
-	"""
+    CLIENT-DB HANDLING
+    """
 
     async def blackjack(self, user, bet, bot, channel, username, user_pfp, message):
         # load json
@@ -199,24 +200,32 @@ class pythonboat_database_handler:
         if user_cash < int(float(bet)):
             self.overwrite_json(json_content)
             return "error", f"You don't have enough money for this bet.\nYou currently have {str(self.currency_symbol)} **{'{:,}'.format(int(user_cash))}** in cash."
+        json_user_content["cash"] -= int(float(bet))
+        json_content["userdata"][user_index] = json_user_content
+        self.overwrite_json(json_content)
 
         # the actual game
         # start it
         startInstance = blackjack_discord_implementation(bot, channel, self.currency_symbol)
         bjPlay = await startInstance.play(bot, channel, username, user_pfp, message, int(float(bet)))
+        json_file = open(self.pathToJson, "r")
+        json_cnt = json.load(json_file)
+        user_index, new_data = self.find_index_in_db(json_cnt["userdata"], user)
+        json_user_cnt = json_cnt["userdata"][user_index]
 
         if bjPlay == "win":
-            json_user_content["cash"] += int(float(bet))
+            json_user_cnt["cash"] += int(float(bet)) * 2
         elif bjPlay == "loss":
-            json_user_content["cash"] -= int(float(bet))
-        elif bjPlay == "bust":
             pass
+            # json_user_content["cash"] -= int(float(bet))
+        elif bjPlay == "bust":
+            json_user_cnt["cash"] += int(float(bet))
         else:
             return "error", "error unknown, contact admin"
 
         # overwrite, end
-        json_content["userdata"][user_index] = json_user_content
-        self.overwrite_json(json_content)
+        json_cnt["userdata"][user_index] = json_user_cnt
+        self.overwrite_json(json_cnt)
 
         return "success", "success"
 
@@ -238,7 +247,6 @@ class pythonboat_database_handler:
             bet = cash
         else:
             bet = bet
-
 
         if cash >= bet:
             """
@@ -314,11 +322,6 @@ class pythonboat_database_handler:
         item_name = item_name
         item_price = 10000
 
-
-
-
-
-
         # 4. check if enough money
         sum_price = item_price * int(float(amount))
         sum_price = round(sum_price, 0)
@@ -328,20 +331,16 @@ class pythonboat_database_handler:
         if user_cash < sum_price:
             return "error", f"Error! Not enough money in cash to purchase.\nto pay: {sum_price}; in cash: {round(user_cash, 0)}"
 
-
-
-
         # 8. rem money, substract stock, print message, add to inventory
         user_content["cash"] -= sum_price
         before = user_content[f"{item_name}_mult"]
         after = before + 0.1 * amount
         after = round(after, 1)
 
-
         color = self.discord_blue_rgb_code
         higher_name = f"{item_name} multiplicator".upper()
         embed = discord.Embed(
-            description=f"You have bought {amount} {item_name} uprgade(s) and paid {str(self.currency_symbol)} **{'{:,}'.format(int(sum_price))}**\n\n\n__**{higher_name}**__\n\n*x{before}* \➡️ *x{after}*",
+            description=f"You have bought {amount} {item_name} uprgade(s) and paid {str(self.currency_symbol)} **{'{:,}'.format(int(sum_price))}**\n\n\n__**{higher_name}**__\n\n*x{before}* ➡️ *x{after}*",
             color=color)
         embed.set_author(name=username, icon_url=user_pfp)
         embed.set_footer(text=f"let\'s goo")
@@ -349,12 +348,12 @@ class pythonboat_database_handler:
         mult = user_content[f"{item_name}_mult"]
         user_content[f"{item_name}_mult"] = round((mult + 0.1 * amount), 1)
 
-
         # overwrite, end
         json_content["userdata"][user_index] = user_content
         self.overwrite_json(json_content)
 
         return "success", "success"
+
     #
     # ROULETTE
     #
@@ -385,6 +384,9 @@ class pythonboat_database_handler:
 
         # the actual game
         # start it
+        json_user_content["cash"] -= int(float(bet))
+        json_content["userdata"][user_index] = json_user_content
+        self.overwrite_json(json_content)
         startInstance = roulette_discord_implementation(bot, channel, self.currency_symbol)
         roulettePlay, multiplicator = await startInstance.play(bot, channel, username, user_pfp, int(float(bet)), space,
                                                                mention)
@@ -399,17 +401,18 @@ class pythonboat_database_handler:
         json_user_content = json_content["userdata"][user_index]
 
         # get user stuff
-        user_cash = json_user_content["cash"]
+        json_file = open(self.pathToJson, "r")
+        json_bet = json.load(json_file)
         if roulettePlay:
-            json_user_content["cash"] += int(float(bet) * multiplicator) - int(float(bet))
+            json_user_content["cash"] += int(float(bet) * multiplicator)
         elif roulettePlay == 0:
-            json_user_content["cash"] -= int(float(bet))
+            pass
         else:
             return "error", "error unknown, contact admin"
 
         # overwrite, end
-        json_content["userdata"][user_index] = json_user_content
-        self.overwrite_json(json_content)
+        json_bet["userdata"][user_index] = json_user_content
+        self.overwrite_json(json_bet)
 
         return "success", "success"
 
@@ -430,8 +433,8 @@ class pythonboat_database_handler:
         multiplicator = json_user_content["slut_mult"]
 
         """
-		SPECIFIC TIME ETC
-		"""
+        SPECIFIC TIME ETC
+        """
         # grep values
         slut_data = json_content["variables"][self.variable_dict["slut"]]
 
@@ -447,15 +450,43 @@ class pythonboat_database_handler:
         # else, gotta check if enough time passed since last slut
         else:
             last_slut_string = json_user_content["last_slut"]
-            # get a timeobject from the string
             last_slut = datetime.strptime(last_slut_string, '%Y-%m-%d %H:%M:%S.%f')
-            # calculate difference, see if it works
+            print(last_slut)
             passed_time = now - last_slut
-            passed_time_minutes = passed_time.total_seconds() // 60.0
-            if passed_time_minutes == 0:
-                # because of // division it might display 0
-                passed_time_minutes = 1
-            if passed_time_minutes > delay:
+            passed_time_minutes = passed_time.total_seconds() // 60 - 1
+            seconds = passed_time.total_seconds()
+            seconds = float(f"{seconds:.0f}")
+            hours_remaining = delay // 60 - seconds // 3600
+            delay_remaining = delay - passed_time_minutes
+            if hours_remaining - 1 < 1:
+                if passed_time_minutes <= 0:
+                    passed_time_minutes = 1
+                # show_secs = True
+                else:
+                    pass
+                # show_secs = False
+                if seconds > delay * 60:
+                    time_check = True
+                else:
+                    time_check = False
+                    delay_remaining = delay - passed_time_minutes
+                    dl_remaining = delay * 60 - seconds
+                    if dl_remaining <= 60:
+                        show_secs = True
+                    else:
+                        show_secs = False
+                    if show_secs == True:
+                        wait = f"{dl_remaining:.0f} seconds"
+                    elif show_secs == False:
+                        wait = f"{delay_remaining:.0f} minutes"
+            else:
+                short_hours = float(f"{hours_remaining:.0f}") - 1
+                short_hours_in_min = short_hours * 60
+                delay_remaining = delay - passed_time_minutes - short_hours_in_min
+                mins = delay_remaining
+                wait = f"{short_hours:.0f} hours and {mins:.0f} minutes"
+            # calculate difference, see if it works
+            if seconds > delay * 60:
                 time_check = True
             else:
                 time_check = False
@@ -470,13 +501,12 @@ class pythonboat_database_handler:
                 minute = int(splitted_three[1])
                 month = int(splitted_two[1])
                 second = int(splitted_four[0])
-        # moving the block here for cleaner code
         if time_check == False:
             dt = datetime(year, month, day, hour, minute, second, 0, timezone(timedelta(hours=0)))
             dt = dt + timedelta(0, 0, 0, 0, delay, 0, 0)
             unix = int(dt.timestamp())
             color = self.discord_blue_rgb_code
-            embed = discord.Embed(description=f"⏱ ️You cannot be a slut for {math.ceil(delay_remaining)} minutes.\nNext slut: <t:{unix}:T>",
+            embed = discord.Embed(description=f"⏱ ️You cannot be a slut for {wait}.",
                                   color=color)
             embed.set_author(name=username, icon_url=user_pfp)
             embed.set_footer(text=f"Slut multiplicator: x{multiplicator}")
@@ -486,8 +516,8 @@ class pythonboat_database_handler:
             print("he can do it")
 
         """
-		ACTUAL FUNCTION
-		"""
+        ACTUAL FUNCTION
+        """
         # so, explanation :
         # not actually using probabilites or so, just a random number between 1 and 2
         # and if for example probability is 50%, then the random num should be > 1.5 in order to win
@@ -561,8 +591,8 @@ class pythonboat_database_handler:
         multiplicator = json_user_content["crime_mult"]
 
         """
-		SPECIFIC TIME ETC
-		"""
+        SPECIFIC TIME ETC
+        """
         # grep values
         crime_data = json_content["variables"][self.variable_dict["crime"]]
 
@@ -578,18 +608,47 @@ class pythonboat_database_handler:
         # else, gotta check if enough time passed since last slut
         else:
             last_slut_string = json_user_content["last_crime"]
-            # get a timeobject from the string
             last_slut = datetime.strptime(last_slut_string, '%Y-%m-%d %H:%M:%S.%f')
-            # calculate difference, see if it works
+            print(last_slut)
             passed_time = now - last_slut
-            passed_time_minutes = passed_time.total_seconds() // 60.0
-            if passed_time_minutes == 0:
-                # because of // division it might display 0
-                passed_time_minutes = 1
-            if passed_time_minutes > delay:
+            passed_time_minutes = passed_time.total_seconds() // 60 - 1
+            seconds = passed_time.total_seconds()
+            seconds = float(f"{seconds:.0f}")
+            hours_remaining = delay // 60 - seconds // 3600
+            delay_remaining = delay - passed_time_minutes
+            if hours_remaining - 1 < 1:
+                if passed_time_minutes <= 0:
+                    passed_time_minutes = 1
+                # show_secs = True
+                else:
+                    pass
+                # show_secs = False
+                if seconds > delay * 60:
+                    time_check = True
+                else:
+                    time_check = False
+                    delay_remaining = delay - passed_time_minutes
+                    dl_remaining = delay * 60 - seconds
+                    if dl_remaining <= 60:
+                        show_secs = True
+                    else:
+                        show_secs = False
+                    if show_secs == True:
+                        wait = f"{dl_remaining:.0f} seconds"
+                    elif show_secs == False:
+                        wait = f"{delay_remaining:.0f} minutes"
+            else:
+                short_hours = float(f"{hours_remaining:.0f}") - 1
+                short_hours_in_min = short_hours * 60
+                delay_remaining = delay - passed_time_minutes - short_hours_in_min
+                mins = delay_remaining
+                wait = f"{short_hours:.0f} hours and {mins:.0f} minutes"
+            # calculate difference, see if it works
+            if seconds > delay * 60:
                 time_check = True
             else:
                 time_check = False
+                delay_remaining = delay - passed_time_minutes
                 splitted = last_slut_string.split(" ")
                 splitted_two = splitted[0].split("-")
                 splitted_three = splitted[1].split(":")
@@ -600,14 +659,12 @@ class pythonboat_database_handler:
                 minute = int(splitted_three[1])
                 month = int(splitted_two[1])
                 second = int(splitted_four[0])
-                delay_remaining = delay - passed_time_minutes
-        # moving the block here for cleaner code
         if time_check == False:
             dt = datetime(year, month, day, hour, minute, second, 0, timezone(timedelta(hours=0)))
             dt = dt + timedelta(0, 0, 0, 0, delay, 0, 0)
             unix = int(dt.timestamp())
             color = self.discord_blue_rgb_code
-            embed = discord.Embed(description=f"⏱ ️You cannot commit a crime for {math.ceil(delay_remaining)} minutes.\nNext crime: <t:{unix}:T>",
+            embed = discord.Embed(description=f"⏱ ️You cannot commit a crime for {wait}.",
                                   color=color)
             embed.set_author(name=username, icon_url=user_pfp)
             embed.set_footer(text=f"Crime multiplicator: x{multiplicator}")
@@ -617,8 +674,8 @@ class pythonboat_database_handler:
             print("he can do it")
 
         """
-		ACTUAL FUNCTION
-		"""
+        ACTUAL FUNCTION
+        """
         # so, explanation :
         # not actually using probabilites or so, just a random number between 1 and 2
         # and if for example probability is 50%, then the random num should be > 1.5 in order to win
@@ -692,8 +749,8 @@ class pythonboat_database_handler:
         multiplicator = json_user_content["work_mult"]
 
         """
-		SPECIFIC TIME ETC
-		"""
+        SPECIFIC TIME ETC
+        """
         # grep values
         work_data = json_content["variables"][self.variable_dict["work"]]
 
@@ -710,17 +767,45 @@ class pythonboat_database_handler:
             last_slut_string = json_user_content["last_work"]
             last_slut = datetime.strptime(last_slut_string, '%Y-%m-%d %H:%M:%S.%f')
             print(last_slut)
-            # calculate difference, see if it works
             passed_time = now - last_slut
-            passed_time_minutes = passed_time.total_seconds() // 60.0
-            if passed_time_minutes == 0:
-                # because of // division it might display 0
-                passed_time_minutes = 1
-            if passed_time_minutes > delay:
+            passed_time_minutes = passed_time.total_seconds() // 60 - 1
+            seconds = passed_time.total_seconds()
+            seconds = float(f"{seconds:.0f}")
+            hours_remaining = delay // 60 - seconds // 3600
+            delay_remaining = delay - passed_time_minutes
+            if hours_remaining - 1 < 1:
+                if passed_time_minutes <= 0:
+                    # because of // division it might display 0
+                    passed_time_minutes = 1
+                # show_secs = True
+                else:
+                    pass
+                # show_secs = False
+                if seconds > delay * 60:
+                    time_check = True
+                else:
+                    time_check = False
+                    delay_remaining = delay - passed_time_minutes
+                    dl_remaining = delay * 60 - seconds
+                    if dl_remaining <= 60:
+                        show_secs = True
+                    else:
+                        show_secs = False
+                    if show_secs == True:
+                        wait = f"{dl_remaining:.0f} seconds"
+                    else:
+                        wait = f"{delay_remaining:.0f} minutes"
+            else:
+                short_hours = float(f"{hours_remaining:.0f}") - 1
+                short_hours_in_min = short_hours * 60
+                delay_remaining = delay - passed_time_minutes - short_hours_in_min
+                mins = delay_remaining
+                wait = f"{short_hours:.0f} hours and {mins:.0f} minutes"
+            # calculate difference, see if it works
+            if seconds > delay * 60:
                 time_check = True
             else:
                 time_check = False
-                delay_remaining = delay - passed_time_minutes
                 splitted = last_slut_string.split(" ")
                 splitted_two = splitted[0].split("-")
                 splitted_three = splitted[1].split(":")
@@ -737,7 +822,7 @@ class pythonboat_database_handler:
             dt = dt + timedelta(0, 0, 0, 0, delay, 0, 0)
             unix = int(dt.timestamp())
             color = self.discord_blue_rgb_code
-            embed = discord.Embed(description=f"⏱ ️You cannot work for {math.ceil(delay_remaining)} minutes.\nNext work: <t:{unix}:T>",
+            embed = discord.Embed(description=f"⏱ ️You cannot work for {wait}.",  # \nNext work: <t:{unix}:T>",
                                   color=color)
             embed.set_author(name=username, icon_url=user_pfp)
             embed.set_footer(text=f"Work multiplicator: x{multiplicator}")
@@ -747,8 +832,8 @@ class pythonboat_database_handler:
             print("he can do it")
 
         """
-		ACTUAL FUNCTION
-		"""
+        ACTUAL FUNCTION
+        """
 
         # work is always a success
         win_phrases = random.choice(work_data["win_phrases"])
@@ -784,8 +869,8 @@ class pythonboat_database_handler:
         multiplicator = json_user_content["daily_mult"]
 
         """
-		SPECIFIC TIME ETC
-		"""
+        SPECIFIC TIME ETC
+        """
         # grep values
         work_data = json_content["variables"][self.variable_dict["daily"]]
 
@@ -800,18 +885,47 @@ class pythonboat_database_handler:
         # else, gotta check if enough time passed since last slut
         else:
             last_slut_string = json_user_content["last_daily"]
-            # get a timeobject from the string
             last_slut = datetime.strptime(last_slut_string, '%Y-%m-%d %H:%M:%S.%f')
-            # calculate difference, see if it works
+            print(last_slut)
             passed_time = now - last_slut
-            passed_time_minutes = passed_time.total_seconds() // 60.0
-            if passed_time_minutes == 0:
-                # because of // division it might display 0
-                passed_time_minutes = 1
-            if passed_time_minutes > delay:
+            passed_time_minutes = passed_time.total_seconds() // 60 - 1
+            seconds = passed_time.total_seconds()
+            seconds = float(f"{seconds:.0f}")
+            hours_remaining = delay // 60 - seconds // 3600
+            delay_remaining = delay - passed_time_minutes
+            if hours_remaining - 1 < 1:
+                if passed_time_minutes <= 0:
+                    passed_time_minutes = 1
+                # show_secs = True
+                else:
+                    pass
+                # show_secs = False
+                if seconds > delay * 60:
+                    time_check = True
+                else:
+                    time_check = False
+                    delay_remaining = delay - passed_time_minutes
+                    dl_remaining = delay * 60 - seconds
+                    if dl_remaining <= 60:
+                        show_secs = True
+                    else:
+                        show_secs = False
+                    if show_secs == True:
+                        wait = f"{dl_remaining:.0f} seconds"
+                    elif show_secs == False:
+                        wait = f"{delay_remaining:.0f} minutes"
+            else:
+                short_hours = float(f"{hours_remaining:.0f}") - 1
+                short_hours_in_min = short_hours * 60
+                delay_remaining = delay - passed_time_minutes - short_hours_in_min
+                mins = delay_remaining
+                wait = f"{short_hours:.0f} hours and {mins:.0f} minutes"
+            # calculate difference, see if it works
+            if seconds > delay * 60:
                 time_check = True
             else:
                 time_check = False
+                delay_remaining = delay - passed_time_minutes
                 splitted = last_slut_string.split(" ")
                 splitted_two = splitted[0].split("-")
                 splitted_three = splitted[1].split(":")
@@ -822,14 +936,14 @@ class pythonboat_database_handler:
                 minute = int(splitted_three[1])
                 month = int(splitted_two[1])
                 second = int(splitted_four[0])
-                delay_remaining = delay - passed_time_minutes
+        # moving the block here for cleaner code
         # moving the block here for cleaner code
         if time_check == False:
             dt = datetime(year, month, day, hour, minute, second, 0, timezone(timedelta(hours=0)))
             dt = dt + timedelta(0, 0, 0, 0, delay, 0, 0)
             unix = int(dt.timestamp())
             color = self.discord_blue_rgb_code
-            embed = discord.Embed(description=f"⏱ ️You can\'t do daily yet!\nNext daily: <t:{unix}>",
+            embed = discord.Embed(description=f"⏱ ️You cannot do daily for {wait}!",
                                   color=color)
             embed.set_author(name=username, icon_url=user_pfp)
             embed.set_footer(text=f"Daily multiplicator: x{multiplicator}")
@@ -839,8 +953,8 @@ class pythonboat_database_handler:
             print("he can do it")
 
         """
-		ACTUAL FUNCTION
-		"""
+        ACTUAL FUNCTION
+        """
 
         # work is always a success
         win_phrases = random.choice(work_data["win_phrases"])
@@ -879,8 +993,8 @@ class pythonboat_database_handler:
         json_user_content = json_content["userdata"][user_index]
 
         """
-		SPECIFIC TIME ETC
-		"""
+        SPECIFIC TIME ETC
+        """
         # grep values
         rob_data = json_content["variables"][self.variable_dict["rob"]]
 
@@ -896,18 +1010,47 @@ class pythonboat_database_handler:
         # else, gotta check if enough time passed since last slut
         else:
             last_slut_string = json_user_content["last_rob"]
-            # get a timeobject from the string
             last_slut = datetime.strptime(last_slut_string, '%Y-%m-%d %H:%M:%S.%f')
-            # calculate difference, see if it works
+            print(last_slut)
             passed_time = now - last_slut
-            passed_time_minutes = passed_time.total_seconds() // 60.0
-            if passed_time_minutes == 0:
-                # because of // division it might display 0
-                passed_time_minutes = 1
-            if passed_time_minutes > delay:
+            passed_time_minutes = passed_time.total_seconds() // 60 - 1
+            seconds = passed_time.total_seconds()
+            seconds = float(f"{seconds:.0f}")
+            hours_remaining = delay // 60 - seconds // 3600
+            delay_remaining = delay - passed_time_minutes
+            if hours_remaining - 1 < 1:
+                if passed_time_minutes <= 0:
+                    passed_time_minutes = 1
+                # show_secs = True
+                else:
+                    pass
+                # show_secs = False
+                if seconds > delay * 60:
+                    time_check = True
+                else:
+                    time_check = False
+                    delay_remaining = delay - passed_time_minutes
+                    dl_remaining = delay * 60 - seconds
+                    if dl_remaining <= 60:
+                        show_secs = True
+                    else:
+                        show_secs = False
+                    if show_secs == True:
+                        wait = f"{dl_remaining:.0f} seconds"
+                    elif show_secs == False:
+                        wait = f"{delay_remaining:.0f} minutes"
+            else:
+                short_hours = float(f"{hours_remaining:.0f}") - 1
+                short_hours_in_min = short_hours * 60
+                delay_remaining = delay - passed_time_minutes - short_hours_in_min
+                mins = delay_remaining
+                wait = f"{short_hours:.0f} hours and {mins:.0f} minutes"
+            # calculate difference, see if it works
+            if seconds > delay * 60:
                 time_check = True
             else:
                 time_check = False
+                delay_remaining = delay - passed_time_minutes
                 splitted = last_slut_string.split(" ")
                 splitted_two = splitted[0].split("-")
                 splitted_three = splitted[1].split(":")
@@ -918,14 +1061,13 @@ class pythonboat_database_handler:
                 minute = int(splitted_three[1])
                 month = int(splitted_two[1])
                 second = int(splitted_four[0])
-                delay_remaining = delay - passed_time_minutes
         # moving the block here for cleaner code
         if time_check == False:
             dt = datetime(year, month, day, hour, minute, second, 0, timezone(timedelta(hours=0)))
             dt = dt + timedelta(0, 0, 0, 0, delay, 0, 0)
             unix = int(dt.timestamp())
             color = self.discord_blue_rgb_code
-            embed = discord.Embed(description=f"⏱ ️You cannot rob someone for {math.ceil(delay_remaining)} minutes.\nNext rob: <t:{unix}:T>",
+            embed = discord.Embed(description=f"⏱ ️You cannot rob someone for {wait}.",
                                   color=color)
             embed.set_author(name=username, icon_url=user_pfp)
             await channel.send(embed=embed)
@@ -934,8 +1076,8 @@ class pythonboat_database_handler:
             print("he can do it")
 
         """
-		ACTUAL FUNCTION
-		"""
+        ACTUAL FUNCTION
+        """
 
         # check if user you want to rob exists
         robbed_user, status = self.find_index_in_db(json_content["userdata"], user_to_rob, fail_safe=True)
@@ -1042,7 +1184,6 @@ class pythonboat_database_handler:
             json_content["userdata"][robbed_user] = robbed_user_data
             self.overwrite_json(json_content)
 
-
             return "success", "success"
 
     # this code is never reached
@@ -1068,7 +1209,15 @@ class pythonboat_database_handler:
         check_bank = "{:,}".format(int(json_user_content["bank"]))
         check_bal = "{:,}".format(int(json_user_content["cash"] + json_user_content["bank"]))
 
-        formatted_time = str(f"{datetime.now().hour}:{datetime.now().minute}")
+        if datetime.now().minute < 10:
+            min = "0"
+        else:
+            min = ""
+        if datetime.now().hour < 10:
+            hr = "0"
+        else:
+            hr = ""
+        formatted_time = str(f"{hr}{datetime.now().hour}:{min}{datetime.now().minute}")
 
         color = self.discord_blue_rgb_code
         embed = discord.Embed(color=color)
@@ -1080,6 +1229,7 @@ class pythonboat_database_handler:
         await channel.send(embed=embed)
 
         return
+
     async def stats(self, user, channel, userbal_to_check, username_to_check, userpfp_to_check):
         # load json
         json_file = open(self.pathToJson, "r")
@@ -1169,13 +1319,25 @@ class pythonboat_database_handler:
             dt = datetime(year, month, day, hour, minute, second, 0, timezone(timedelta(hours=0)))
             last_rob = f"<t:{int(dt.timestamp())}>"
 
-        formatted_time = str(f"{datetime.now().hour}:{datetime.now().minute}")
+        if datetime.now().minute < 10:
+            min = "0"
+        else:
+            min = ""
+        if datetime.now().hour < 10:
+            hr = "0"
+        else:
+            hr = ""
+        formatted_time = str(f"{hr}{datetime.now().hour}:{min}{datetime.now().minute}")
 
         color = self.discord_blue_rgb_code
         embed = discord.Embed(color=color)
         embed.add_field(name="**Chicken Rate 🐓**", value=f"{chicken_rate}%", inline=False)
-        embed.add_field(name="**Multiplicators**", value=f"**Slut**: *x{slut_mult}*\n**Work**: *x{work_mult}*\n**Daily**: *x{daily_mult}*\n**Crime**: *x{crime_mult}*", inline=False)
-        embed.add_field(name="**Last Done:**", value=f"**Slut**: {last_slut}\n**Work**: {last_work}\n**Daily**: {last_daily}\n**Crime**: {last_crime}\n**Rob**: {last_rob}", inline=False)
+        embed.add_field(name="**Multiplicators**",
+                        value=f"**Slut:** *x{slut_mult}*\n**Work:** *x{work_mult}*\n**Daily:** *x{daily_mult}*\n**Crime:** *x{crime_mult}*",
+                        inline=False)
+        embed.add_field(name="**Last Done:**",
+                        value=f"**Slut:** {last_slut}\n**Work:** {last_work}\n**Daily:** {last_daily}\n**Crime:** {last_crime}\n**Rob:** {last_rob}",
+                        inline=False)
         embed.set_author(name=username_to_check, icon_url=userpfp_to_check)
         embed.set_footer(text=f"today at {formatted_time}")
         await channel.send(embed=embed)
@@ -1313,7 +1475,7 @@ class pythonboat_database_handler:
         # inform user
         color = self.discord_success_rgb_code
         embed = discord.Embed(
-            description=f"✅ {recept_uname.mention} has received your {str(self.currency_symbol)} {'{:,}'.format(int(amount))}",
+            description=f"✅ <@{recept_uname.id}> has received your {str(self.currency_symbol)} {'{:,}'.format(int(amount))}",
             color=color)
         embed.set_author(name=username, icon_url=user_pfp)
         await channel.send(embed=embed)
@@ -1341,8 +1503,8 @@ class pythonboat_database_handler:
         json_user_content = json_content["userdata"][user_index]
 
         """
-		sorting algorithm
-		"""
+        sorting algorithm
+        """
         # yes, i could use a dict
         all_users = []
         all_bal = []
@@ -1456,13 +1618,13 @@ class pythonboat_database_handler:
         json_content = json.load(json_file)
 
         """
-		variable_dict = {
-			"slut": 0,
-			"crime": 1,
-			"work": 2,
-			"rob": 3
-		}
-		"""
+        variable_dict = {
+            "slut": 0,
+            "crime": 1,
+            "work": 2,
+            "rob": 3
+        }
+        """
 
         if module not in self.variable_dict.keys() and module not in ["symbols", "currency_symbol"]:
             possible = "slut, crime, work, rob, symbols"
@@ -1504,7 +1666,7 @@ class pythonboat_database_handler:
         # inform user
         color = self.discord_success_rgb_code
         embed = discord.Embed(
-            description=f"✅  Added {str(self.currency_symbol)} {'{:,}'.format(int(amount))} to {recept_uname.mention}'s cash balance",
+            description=f"✅  Added {str(self.currency_symbol)} {'{:,}'.format(int(amount))} to <@{recept_uname.id}>'s cash balance",
             color=color)
         embed.set_author(name=username, icon_url=user_pfp)
         await channel.send(embed=embed)
@@ -1535,7 +1697,7 @@ class pythonboat_database_handler:
         # inform user
         color = self.discord_success_rgb_code
         embed = discord.Embed(
-            description=f"✅  Removed {str(self.currency_symbol)} {'{:,}'.format(int(amount))} from {recept_uname.mention}'s cash balance",
+            description=f"✅  Removed {str(self.currency_symbol)} {'{:,}'.format(int(amount))} from <@{recept_uname.id}>'s cash balance",
             color=color)
         embed.set_author(name=username, icon_url=user_pfp)
         await channel.send(embed=embed)
@@ -1617,8 +1779,8 @@ class pythonboat_database_handler:
         return "success", "success"
 
     """
-	ITEM HANDLING
-	"""
+    ITEM HANDLING
+    """
 
     #
     # CREATE NEW ITEM
