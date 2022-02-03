@@ -335,7 +335,7 @@ async def on_message(message):
         # space must be in second, and a valid space
         space = str(param[2])
         if space.lower() not in ["odd", "even", "black", "red", "1st", "2nd", "3rd", "first", "second", "third", "1-12",
-                                 "13-24", "25-36"]:
+                                 "13-24", "25-36", "1-18", "19-36"]:
             fail = 0
             try:
                 space = int(space)
