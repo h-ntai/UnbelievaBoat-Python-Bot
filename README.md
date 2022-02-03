@@ -2,6 +2,7 @@
 ### For questions about the bot and how to set it up: ask me on Discord at *<Kendrik 2.0#7373>*
 
 ### Forker Note: my discord is hoemotion#2854, don't even try running this if you never used python. Also don't dm me with stupid questions, only if you're getting errors or have some suggestions etc. lmao
+> there's no fucking way i got terminated lmao (5th time yet)
 
 Code isn't finished yet.
 
